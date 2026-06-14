@@ -62,6 +62,7 @@ export const useOcrStore = defineStore('ocr', () => {
   function loadMockDocument() {
     documents.value = [MOCK_DOC]
     currentDoc.value = MOCK_DOC
+    highlightedLineId.value = MOCK_DOC.results[0]?.id || null
   }
 
   async function uploadAndOCR(file: File) {
@@ -82,10 +83,12 @@ export const useOcrStore = defineStore('ocr', () => {
         }
         documents.value.push(doc)
         currentDoc.value = doc
+        highlightedLineId.value = doc.results[0]?.id || null
+        viewMode.value = 'compare'
       }
     } catch {
-      // Use mock data as fallback
       loadMockDocument()
+      viewMode.value = 'compare'
     } finally {
       isLoading.value = false
     }

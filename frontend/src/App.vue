@@ -11,12 +11,15 @@
         </label>
       </div>
 
-      <button @click="store.loadMockDocument()" class="bg-gray-800 py-2 rounded text-sm hover:bg-gray-700">
+      <button @click="store.loadMockDocument(); store.viewMode = 'annotate'" class="bg-gray-800 py-2 rounded text-sm hover:bg-gray-700">
         加载示例文档
+      </button>
+      <button @click="store.loadMockDocument(); store.viewMode = 'compare'" class="bg-amber-600 py-2 rounded text-sm hover:bg-amber-500 text-black font-medium">
+        开始对照阅读
       </button>
 
       <!-- View mode toggle -->
-      <div class="flex bg-gray-800 rounded p-1">
+      <div v-if="store.currentDoc" class="flex bg-gray-800 rounded p-1">
         <button @click="store.viewMode = 'annotate'"
           class="flex-1 py-1.5 text-xs rounded transition-colors"
           :class="store.viewMode === 'annotate' ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-white'">
@@ -25,6 +28,14 @@
         <button @click="store.viewMode = 'compare'"
           class="flex-1 py-1.5 text-xs rounded transition-colors"
           :class="store.viewMode === 'compare' ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-white'">
+          对照阅读
+        </button>
+      </div>
+      <div v-else class="flex bg-gray-800/50 rounded p-1 opacity-50">
+        <button class="flex-1 py-1.5 text-xs rounded text-gray-500" disabled>
+          标注模式
+        </button>
+        <button class="flex-1 py-1.5 text-xs rounded text-gray-500" disabled>
           对照阅读
         </button>
       </div>
@@ -42,11 +53,25 @@
 
       <!-- Document list -->
       <div class="flex-1 overflow-y-auto space-y-1">
-        <div v-for="d in store.documents" :key="d.id" @click="store.currentDoc = d"
-          class="bg-gray-800 rounded p-2 cursor-pointer text-sm"
+        <div v-for="d in store.documents" :key="d.id"
+          class="bg-gray-800 rounded p-2 cursor-pointer text-sm group"
           :class="store.currentDoc?.id === d.id ? 'ring-1 ring-amber-500' : ''">
-          {{ d.name }}
-          <div class="text-xs text-gray-500">{{ d.results.length }} 行识别</div>
+          <div class="flex justify-between items-start" @click="store.currentDoc = d">
+            <div>
+              <span>{{ d.name }}</span>
+              <div class="text-xs text-gray-500">{{ d.results.length }} 行识别</div>
+            </div>
+          </div>
+          <div class="flex gap-1 mt-2">
+            <button @click.stop="openDocument(d, 'annotate')"
+              class="flex-1 py-1 text-xs rounded bg-gray-700 hover:bg-gray-600 transition-colors">
+              标注
+            </button>
+            <button @click.stop="openDocument(d, 'compare')"
+              class="flex-1 py-1 text-xs rounded bg-amber-600 hover:bg-amber-500 text-black font-medium transition-colors">
+              对照阅读
+            </button>
+          </div>
         </div>
       </div>
 
@@ -112,6 +137,12 @@ import ImageCanvas from './components/ImageCanvas.vue'
 import CompareView from './components/CompareView.vue'
 
 const store = useOcrStore()
+
+function openDocument(doc: any, mode: 'annotate' | 'compare') {
+  store.currentDoc = doc
+  store.viewMode = mode
+  store.highlightedLineId = doc.results[0]?.id || null
+}
 
 function onUpload(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
