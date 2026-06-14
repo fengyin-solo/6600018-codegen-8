@@ -15,6 +15,20 @@
         加载示例文档
       </button>
 
+      <!-- View mode toggle -->
+      <div class="flex bg-gray-800 rounded p-1">
+        <button @click="store.viewMode = 'annotate'"
+          class="flex-1 py-1.5 text-xs rounded transition-colors"
+          :class="store.viewMode === 'annotate' ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-white'">
+          标注模式
+        </button>
+        <button @click="store.viewMode = 'compare'"
+          class="flex-1 py-1.5 text-xs rounded transition-colors"
+          :class="store.viewMode === 'compare' ? 'bg-amber-500 text-black' : 'text-gray-400 hover:text-white'">
+          对照阅读
+        </button>
+      </div>
+
       <!-- Search -->
       <div>
         <input v-model="store.searchQuery" @input="store.searchInDocuments(store.searchQuery)"
@@ -42,53 +56,60 @@
       </button>
     </div>
 
-    <!-- Center: Image + OCR overlay -->
-    <div class="flex-1 relative bg-gray-950 overflow-hidden">
-      <ImageCanvas v-if="store.currentDoc" />
-      <div v-else class="flex items-center justify-center h-full text-gray-600">
-        请上传古籍图片或加载示例文档
-      </div>
-    </div>
-
-    <!-- Right: OCR results & annotations -->
-    <div class="w-80 bg-gray-900 p-4 flex flex-col gap-3 border-l border-gray-800 overflow-y-auto">
-      <h3 class="text-amber-300 font-bold text-sm">OCR 识别结果</h3>
-      <div v-if="store.currentDoc" class="space-y-2">
-        <div v-for="r in store.currentDoc.results" :key="r.id"
-          class="bg-gray-800 rounded p-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-white font-medium">{{ r.text }}</span>
-            <span class="text-xs px-2 py-0.5 rounded"
-              :class="r.confidence > 0.9 ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'">
-              {{ (r.confidence * 100).toFixed(0) }}%
-            </span>
-          </div>
-          <div class="text-xs text-gray-400 mt-1">
-            简体: {{ store.convertVariant(r.text) }}
-          </div>
-          <input v-model="r.corrected" placeholder="人工校正..."
-            class="w-full bg-gray-700 rounded px-2 py-1 text-xs mt-1" />
+    <!-- Center / Main content -->
+    <div v-if="store.viewMode === 'annotate'" class="flex-1 flex">
+      <!-- Image + OCR overlay -->
+      <div class="flex-1 relative bg-gray-950 overflow-hidden">
+        <ImageCanvas v-if="store.currentDoc" />
+        <div v-else class="flex items-center justify-center h-full text-gray-600">
+          请上传古籍图片或加载示例文档
         </div>
       </div>
 
-      <h3 class="text-amber-300 font-bold text-sm mt-4">标注列表</h3>
-      <div v-if="store.currentDoc" class="space-y-1">
-        <div v-for="a in store.currentDoc.annotations" :key="a.id"
-          class="bg-gray-800 rounded p-2 text-xs flex justify-between">
-          <span>[{{ a.type }}] {{ a.label }}: {{ a.content }}</span>
-          <button @click="store.removeAnnotation(a.id)" class="text-red-400 hover:underline">删除</button>
+      <!-- Right: OCR results & annotations -->
+      <div class="w-80 bg-gray-900 p-4 flex flex-col gap-3 border-l border-gray-800 overflow-y-auto">
+        <h3 class="text-amber-300 font-bold text-sm">OCR 识别结果</h3>
+        <div v-if="store.currentDoc" class="space-y-2">
+          <div v-for="r in store.currentDoc.results" :key="r.id"
+            class="bg-gray-800 rounded p-2 text-sm">
+            <div class="flex justify-between">
+              <span class="text-white font-medium">{{ r.text }}</span>
+              <span class="text-xs px-2 py-0.5 rounded"
+                :class="r.confidence > 0.9 ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'">
+                {{ (r.confidence * 100).toFixed(0) }}%
+              </span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1">
+              简体: {{ store.convertVariant(r.text) }}
+            </div>
+            <input v-model="r.corrected" placeholder="人工校正..."
+              class="w-full bg-gray-700 rounded px-2 py-1 text-xs mt-1" />
+          </div>
         </div>
-        <div v-if="!store.currentDoc.annotations.length" class="text-gray-600 text-xs">
-          在图片上拖拽框选区域添加标注
+
+        <h3 class="text-amber-300 font-bold text-sm mt-4">标注列表</h3>
+        <div v-if="store.currentDoc" class="space-y-1">
+          <div v-for="a in store.currentDoc.annotations" :key="a.id"
+            class="bg-gray-800 rounded p-2 text-xs flex justify-between">
+            <span>[{{ a.type }}] {{ a.label }}: {{ a.content }}</span>
+            <button @click="store.removeAnnotation(a.id)" class="text-red-400 hover:underline">删除</button>
+          </div>
+          <div v-if="!store.currentDoc.annotations.length" class="text-gray-600 text-xs">
+            在图片上拖拽框选区域添加标注
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Compare view -->
+    <CompareView v-else-if="store.viewMode === 'compare'" class="flex-1" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { useOcrStore } from './store/ocr'
 import ImageCanvas from './components/ImageCanvas.vue'
+import CompareView from './components/CompareView.vue'
 
 const store = useOcrStore()
 

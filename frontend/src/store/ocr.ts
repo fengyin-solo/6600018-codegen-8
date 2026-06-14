@@ -8,6 +8,8 @@ export const useOcrStore = defineStore('ocr', () => {
   const isLoading = ref(false)
   const searchQuery = ref('')
   const searchResults = ref<OCRResult[]>([])
+  const viewMode = ref<'annotate' | 'compare'>('annotate')
+  const highlightedLineId = ref<string | null>(null)
 
   // Mock data
   const MOCK_DOC: Document = {
@@ -15,13 +17,37 @@ export const useOcrStore = defineStore('ocr', () => {
     name: '论语·学而篇',
     imageUrl: '',
     results: [
-      { id: 'r1', text: '子曰', bbox: [50, 30, 80, 40], confidence: 0.95 },
-      { id: 'r2', text: '学而', bbox: [50, 80, 80, 40], confidence: 0.88 },
-      { id: 'r3', text: '时习之', bbox: [50, 130, 120, 40], confidence: 0.91 },
-      { id: 'r4', text: '不亦说乎', bbox: [50, 180, 160, 40], confidence: 0.87 },
-      { id: 'r5', text: '有朋', bbox: [200, 30, 80, 40], confidence: 0.93 },
-      { id: 'r6', text: '自远方来', bbox: [200, 80, 160, 40], confidence: 0.85 },
-      { id: 'r7', text: '不亦乐乎', bbox: [200, 130, 160, 40], confidence: 0.92 },
+      { id: 'r1', text: '子曰', bbox: [490, 40, 45, 36], confidence: 0.95 },
+      { id: 'r2', text: '學而', bbox: [490, 90, 45, 36], confidence: 0.88 },
+      { id: 'r3', text: '時習之', bbox: [490, 140, 45, 36], confidence: 0.91 },
+      { id: 'r4', text: '不亦', bbox: [490, 190, 45, 36], confidence: 0.87 },
+      { id: 'r5', text: '説乎', bbox: [490, 240, 45, 36], confidence: 0.90 },
+      { id: 'r6', text: '有朋', bbox: [420, 40, 45, 36], confidence: 0.93 },
+      { id: 'r7', text: '自遠', bbox: [420, 90, 45, 36], confidence: 0.85 },
+      { id: 'r8', text: '方來', bbox: [420, 140, 45, 36], confidence: 0.92 },
+      { id: 'r9', text: '不亦', bbox: [420, 190, 45, 36], confidence: 0.89 },
+      { id: 'r10', text: '樂乎', bbox: [420, 240, 45, 36], confidence: 0.94 },
+      { id: 'r11', text: '人不', bbox: [350, 40, 45, 36], confidence: 0.86 },
+      { id: 'r12', text: '知而', bbox: [350, 90, 45, 36], confidence: 0.91 },
+      { id: 'r13', text: '不慍', bbox: [350, 140, 45, 36], confidence: 0.88 },
+      { id: 'r14', text: '不亦', bbox: [350, 190, 45, 36], confidence: 0.90 },
+      { id: 'r15', text: '君子', bbox: [350, 240, 45, 36], confidence: 0.87 },
+      { id: 'r16', text: '乎', bbox: [350, 290, 45, 36], confidence: 0.92 },
+      { id: 'r17', text: '曾子', bbox: [280, 40, 45, 36], confidence: 0.93 },
+      { id: 'r18', text: '曰吾', bbox: [280, 90, 45, 36], confidence: 0.85 },
+      { id: 'r19', text: '日三', bbox: [280, 140, 45, 36], confidence: 0.91 },
+      { id: 'r20', text: '省吾', bbox: [280, 190, 45, 36], confidence: 0.89 },
+      { id: 'r21', text: '身', bbox: [280, 240, 45, 36], confidence: 0.94 },
+      { id: 'r22', text: '為人', bbox: [210, 40, 45, 36], confidence: 0.86 },
+      { id: 'r23', text: '謀而', bbox: [210, 90, 45, 36], confidence: 0.91 },
+      { id: 'r24', text: '不忠', bbox: [210, 140, 45, 36], confidence: 0.88 },
+      { id: 'r25', text: '乎', bbox: [210, 190, 45, 36], confidence: 0.90 },
+      { id: 'r26', text: '與朋', bbox: [140, 40, 45, 36], confidence: 0.87 },
+      { id: 'r27', text: '友交', bbox: [140, 90, 45, 36], confidence: 0.92 },
+      { id: 'r28', text: '而不', bbox: [140, 140, 45, 36], confidence: 0.85 },
+      { id: 'r29', text: '信乎', bbox: [140, 190, 45, 36], confidence: 0.93 },
+      { id: 'r30', text: '傳不', bbox: [70, 40, 45, 36], confidence: 0.89 },
+      { id: 'r31', text: '習乎', bbox: [70, 90, 45, 36], confidence: 0.91 },
     ],
     annotations: [],
     createdAt: '2025-01-15'
@@ -102,9 +128,17 @@ export const useOcrStore = defineStore('ocr', () => {
     return tei
   }
 
+  function setHighlightedLine(id: string | null) {
+    highlightedLineId.value = id
+  }
+
+  function toggleViewMode() {
+    viewMode.value = viewMode.value === 'annotate' ? 'compare' : 'annotate'
+  }
+
   return {
-    documents, currentDoc, isLoading, searchQuery, searchResults,
+    documents, currentDoc, isLoading, searchQuery, searchResults, viewMode, highlightedLineId,
     loadMockDocument, uploadAndOCR, addAnnotation, removeAnnotation,
-    convertVariant, searchInDocuments, exportTEI
+    convertVariant, searchInDocuments, exportTEI, setHighlightedLine, toggleViewMode
   }
 })
